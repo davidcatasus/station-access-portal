@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "kdf": "PBKDF2",
+  "algorithm": "SHA-256",
+  "iterations": 250000,
+  "keyLength": 256,
+  "salt": "OwO0TCX35u2F7izOCjNE8A==",
+  "hash": "YCcjSBiYcW8aRnxKtO//2enroaIyDmRLLp9/p9S25bE="
+}

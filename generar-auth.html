@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Generar auth.json</title><style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui;background:#071325}
+main{width:min(520px,calc(100% - 30px));padding:30px;border-radius:22px;background:white}
+label{display:block;margin:18px 0 7px;font-weight:750}input,button{width:100%;min-height:50px;box-sizing:border-box;border-radius:10px;font:inherit}
+input{padding:0 13px;border:1px solid #bbb}button{margin-top:18px;border:0;background:#df002b;color:white;font-weight:800}
+</style></head><body><main><h1>Cambiar contraseña</h1>
+<p>Genera un nuevo <strong>auth.json</strong>. La contraseña debe tener al menos 12 caracteres.</p>
+<form id="f"><label>Nueva contraseña</label><input id="p" type="password" minlength="12" required>
+<label>Repetir contraseña</label><input id="c" type="password" minlength="12" required>
+<button>Generar auth.json</button><p id="m"></p></form></main><script>
+const f=document.getElementById("f"),p=document.getElementById("p"),c=document.getElementById("c"),m=document.getElementById("m");
+const b64=b=>btoa(String.fromCharCode(...b));
+f.addEventListener("submit",async e=>{e.preventDefault();if(p.value!==c.value){m.textContent="No coinciden.";return}
+const salt=crypto.getRandomValues(new Uint8Array(16)),iterations=250000;
+const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(p.value),"PBKDF2",false,["deriveBits"]);
+const bits=await crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt,iterations},key,256);
+const data={version:1,kdf:"PBKDF2",algorithm:"SHA-256",iterations,keyLength:256,salt:b64(salt),hash:b64(new Uint8Array(bits))};
+const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="auth.json";a.click();m.textContent="Archivo generado.";});
+</script></body></html>

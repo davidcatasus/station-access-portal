@@ -1,0 +1,16 @@
+SUBE A LA RAÍZ DE GITHUB:
+- index.html
+- auth.json
+- estaciones.json
+- icono_corporativo_rojo_MADIC.ico
+
+CONTRASEÑA TEMPORAL:
+CAMBIAR-ESTA-CONTRASENA
+
+ANTES DE PUBLICAR:
+1. Abre generar-auth.html en tu ordenador.
+2. Introduce la contraseña nueva.
+3. Sustituye auth.json en GitHub.
+
+Esta barrera evita accesos casuales, pero no equivale a autenticación de servidor.
+Usa una contraseña larga, única y difícil de adivinar.
