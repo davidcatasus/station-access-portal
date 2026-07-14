@@ -1,11 +1,6 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="shortcut icon" href="favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="manifest" href="site.webmanifest">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Station Access Portal">
@@ -852,6 +847,18 @@
     </section>
   </main>
 
+  <!--
+    "tabName" es opcional en estaciones.json. Ejemplo:
+    {
+      "nombre": "Estación Barcelona Norte",
+      "url": "https://example.com",
+      "comunidad": "Cataluña",
+      "ciudad": "Barcelona",
+      "etiqueta": "Support",
+      "tabName": "station_barcelona_norte"
+    }
+    Si se omite, el portal genera automáticamente un nombre único usando la URL.
+  -->
   <script id="fallbackData" type="application/json">
 [
   {
@@ -980,16 +987,84 @@
         </svg>`;
     }
 
+
+    /**
+     * Devuelve un nombre de pestaña estable para cada estación.
+     * Se puede definir manualmente en estaciones.json mediante "tabName".
+     * Si no existe, se genera automáticamente a partir de la URL.
+     */
+    function getStationTabName(station) {
+      if (safeText(station.tabName)) {
+        return safeText(station.tabName)
+          .replace(/[^a-zA-Z0-9_-]+/g, "_")
+          .slice(0, 100);
+      }
+
+      const source = safeText(station.url) || safeText(station.nombre);
+      let hash = 2166136261;
+
+      for (let i = 0; i < source.length; i++) {
+        hash ^= source.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+
+      const readableName = normalize(station.nombre)
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 45);
+
+      return `station_${readableName || "access"}_${(hash >>> 0).toString(16)}`;
+    }
+
+    /**
+     * Abre la estación reutilizando la misma pestaña cuando fue abierta
+     * anteriormente desde este portal.
+     */
+    function openStation(station) {
+      const tabName = getStationTabName(station);
+      const stationWindow = window.open(station.url, tabName);
+
+      if (!stationWindow) {
+        alert(
+          "El navegador ha bloqueado la apertura de la pestaña. " +
+          "Permite las ventanas emergentes para este portal."
+        );
+        return;
+      }
+
+      try {
+        stationWindow.focus();
+      } catch (error) {
+        console.debug("El navegador no permitió enfocar la pestaña.", error);
+      }
+    }
+
     function createCard(station, index) {
       const card = document.createElement("a");
       card.className = "station-card";
       card.href = station.url;
-      card.target = "_blank";
-      card.rel = "noopener noreferrer";
+      card.rel = "noopener";
+
+      card.addEventListener("click", event => {
+        // Conserva los comportamientos especiales del navegador:
+        // Ctrl/Cmd+clic, Shift+clic y botón central.
+        if (
+          event.button !== 0 ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          event.altKey
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        openStation(station);
+      });
       card.style.animationDelay = `${Math.min(index * 45, 360)}ms`;
       card.setAttribute(
         "aria-label",
-        `Abrir ${station.nombre} en una pestaña nueva`
+        `Abrir o recuperar la pestaña de ${station.nombre}`
       );
 
       card.innerHTML = `
