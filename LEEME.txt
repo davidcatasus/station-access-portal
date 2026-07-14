@@ -1,0 +1,30 @@
+PORTAL DE ESTACIONES
+
+ARCHIVOS
+- index.html: página completa.
+- estaciones.json: datos de las estaciones.
+
+FORMATO DEL JSON
+[
+  {
+    "nombre": "Nombre de la estación",
+    "url": "https://servidor/aplicacion",
+    "comunidad": "Cataluña",
+    "ciudad": "Barcelona",
+    "etiqueta": "Loxone"
+  }
+]
+
+PRUEBA LOCAL
+No abras index.html únicamente con doble clic si quieres comprobar la carga externa
+del JSON. En esta carpeta abre una consola y ejecuta:
+
+Python:
+  python -m http.server 8000
+
+Después abre:
+  http://localhost:8000
+
+PUBLICACIÓN
+Sube index.html y estaciones.json juntos, en la misma carpeta, a cualquier alojamiento
+estático. Al modificar estaciones.json, la web actualizará las tarjetas al recargar.

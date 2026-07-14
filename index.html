@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Portal empresarial de acceso a estaciones">
+  <title>Portal de estaciones</title>
+
+  <style>
+    :root {
+      --bg: #07101d;
+      --panel: rgba(10, 23, 40, .72);
+      --panel-hover: rgba(18, 42, 70, .88);
+      --border: rgba(255,255,255,.15);
+      --text: #f5f8fb;
+      --muted: #aab8c7;
+      --accent: #3ad6a0;
+      --accent-2: #59a8ff;
+      --danger: #ff7f7f;
+      --shadow: 0 18px 50px rgba(0,0,0,.28);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+                   "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(49,130,206,.18), transparent 36%),
+        radial-gradient(circle at 85% 25%, rgba(58,214,160,.16), transparent 30%),
+        linear-gradient(135deg, #050b14 0%, #0b1d31 52%, #07101d 100%);
+      overflow-x: hidden;
+    }
+
+    /* Fondo dibujado dentro del propio HTML: call center + gasolinera */
+    .background-art {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      opacity: .22;
+      filter: blur(5px);
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+
+    .background-art svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .background-shade {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(4,10,18,.35), rgba(4,10,18,.82)),
+        radial-gradient(circle at center, transparent 0 35%, rgba(4,10,18,.45) 100%);
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 72px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #07101d;
+      background: linear-gradient(135deg, var(--accent), #9df8d7);
+      box-shadow: 0 12px 32px rgba(58,214,160,.23);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 3.5rem);
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+
+    .subtitle {
+      margin: 9px 0 0;
+      color: var(--muted);
+      max-width: 680px;
+      line-height: 1.55;
+    }
+
+    .status {
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: .92rem;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(5, 13, 23, .55);
+      backdrop-filter: blur(14px);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto;
+      gap: 12px;
+      align-items: end;
+      padding: 18px;
+      margin-bottom: 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(7, 16, 29, .62);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .field label {
+      display: block;
+      margin: 0 0 7px 3px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    select, button {
+      min-height: 46px;
+      border-radius: 13px;
+      border: 1px solid var(--border);
+      font: inherit;
+    }
+
+    select {
+      width: 100%;
+      padding: 0 42px 0 14px;
+      color: var(--text);
+      background: #0b1b2d;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 4px rgba(89,168,255,.16);
+    }
+
+    button {
+      padding: 0 18px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+
+    .btn-primary {
+      color: #06101c;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--accent), #86f2cb);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+    }
+
+    .summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 3px 14px;
+      color: var(--muted);
+    }
+
+    .summary strong { color: var(--text); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 17px;
+    }
+
+    .station-card {
+      position: relative;
+      min-height: 210px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 21px;
+      color: inherit;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.025)),
+        var(--panel);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 14px 35px rgba(0,0,0,.18);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease,
+                  box-shadow .2s ease;
+      animation: reveal .45s ease both;
+    }
+
+    .station-card::after {
+      content: "";
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      right: -40px;
+      bottom: -45px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(58,214,160,.25), transparent 70%);
+    }
+
+    .station-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(58,214,160,.62);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.045)),
+        var(--panel-hover);
+      box-shadow: 0 24px 50px rgba(0,0,0,.30);
+    }
+
+    .station-card:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    .tag {
+      width: fit-content;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: .76rem;
+      font-weight: 850;
+      color: #06131c;
+      background: linear-gradient(135deg, var(--accent), #b8ffe6);
+    }
+
+    .station-card h2 {
+      margin: 17px 0 8px;
+      font-size: 1.3rem;
+      line-height: 1.2;
+    }
+
+    .location {
+      display: flex;
+      gap: 7px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .open-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 24px;
+      font-weight: 800;
+      color: #d9eaff;
+    }
+
+    .arrow {
+      font-size: 1.25rem;
+      transition: transform .2s ease;
+    }
+
+    .station-card:hover .arrow { transform: translate(3px, -3px); }
+
+    .empty, .error {
+      grid-column: 1 / -1;
+      padding: 34px 20px;
+      text-align: center;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      background: rgba(7,16,29,.58);
+      color: var(--muted);
+    }
+
+    .error { color: var(--danger); }
+
+    footer {
+      margin-top: 30px;
+      color: #8394a8;
+      text-align: center;
+      font-size: .88rem;
+    }
+
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 720px) {
+      .shell { padding-top: 25px; }
+      header { align-items: flex-start; flex-direction: column; }
+      .toolbar { grid-template-columns: 1fr; }
+      button { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="background-art" aria-hidden="true">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
+         xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#17446d"/>
+          <stop offset="1" stop-color="#081624"/>
+        </linearGradient>
+        <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#80d9ff" stop-opacity=".75"/>
+          <stop offset="1" stop-color="#173956" stop-opacity=".45"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="1600" height="900" fill="url(#sky)"/>
+
+      <!-- Call center, lado izquierdo -->
+      <g transform="translate(70 145)">
+        <rect x="0" y="0" width="760" height="530" rx="35" fill="#112c47"/>
+        <rect x="35" y="35" width="690" height="245" rx="20" fill="url(#glass)"/>
+        <g fill="#87d8ff" opacity=".55">
+          <rect x="70" y="65" width="135" height="74" rx="10"/>
+          <rect x="225" y="65" width="135" height="74" rx="10"/>
+          <rect x="380" y="65" width="135" height="74" rx="10"/>
+          <rect x="535" y="65" width="135" height="74" rx="10"/>
+          <rect x="70" y="165" width="135" height="74" rx="10"/>
+          <rect x="225" y="165" width="135" height="74" rx="10"/>
+          <rect x="380" y="165" width="135" height="74" rx="10"/>
+          <rect x="535" y="165" width="135" height="74" rx="10"/>
+        </g>
+        <g fill="#07121e">
+          <rect x="55" y="330" width="190" height="18" rx="9"/>
+          <rect x="285" y="330" width="190" height="18" rx="9"/>
+          <rect x="515" y="330" width="190" height="18" rx="9"/>
+          <rect x="55" y="435" width="190" height="18" rx="9"/>
+          <rect x="285" y="435" width="190" height="18" rx="9"/>
+          <rect x="515" y="435" width="190" height="18" rx="9"/>
+        </g>
+        <g fill="#3ad6a0">
+          <circle cx="150" cy="385" r="31"/>
+          <circle cx="380" cy="385" r="31"/>
+          <circle cx="610" cy="385" r="31"/>
+          <circle cx="150" cy="490" r="31"/>
+          <circle cx="380" cy="490" r="31"/>
+          <circle cx="610" cy="490" r="31"/>
+        </g>
+        <g fill="none" stroke="#dff7ff" stroke-width="12" stroke-linecap="round">
+          <path d="M124 380c0-36 52-36 52 0"/>
+          <path d="M354 380c0-36 52-36 52 0"/>
+          <path d="M584 380c0-36 52-36 52 0"/>
+          <path d="M124 485c0-36 52-36 52 0"/>
+          <path d="M354 485c0-36 52-36 52 0"/>
+          <path d="M584 485c0-36 52-36 52 0"/>
+        </g>
+      </g>
+
+      <!-- Gasolinera, lado derecho -->
+      <g transform="translate(880 255)">
+        <rect x="0" y="300" width="650" height="230" rx="26" fill="#0b2137"/>
+        <rect x="20" y="220" width="610" height="72" rx="14" fill="#e6f4ff"/>
+        <rect x="50" y="240" width="220" height="25" rx="8" fill="#3ad6a0"/>
+        <rect x="300" y="240" width="135" height="25" rx="8" fill="#59a8ff"/>
+        <rect x="465" y="240" width="135" height="25" rx="8" fill="#3ad6a0"/>
+        <rect x="72" y="292" width="22" height="238" fill="#dceaf4"/>
+        <rect x="553" y="292" width="22" height="238" fill="#dceaf4"/>
+
+        <g transform="translate(145 335)">
+          <rect width="125" height="145" rx="18" fill="#d9e7f0"/>
+          <rect x="22" y="20" width="81" height="46" rx="8" fill="#183a56"/>
+          <rect x="28" y="84" width="69" height="34" rx="7" fill="#3ad6a0"/>
+          <path d="M125 36c58 0 58 102 28 117" fill="none" stroke="#d9e7f0" stroke-width="16"/>
+        </g>
+
+        <g transform="translate(370 335)">
+          <rect width="125" height="145" rx="18" fill="#d9e7f0"/>
+          <rect x="22" y="20" width="81" height="46" rx="8" fill="#183a56"/>
+          <rect x="28" y="84" width="69" height="34" rx="7" fill="#59a8ff"/>
+          <path d="M125 36c58 0 58 102 28 117" fill="none" stroke="#d9e7f0" stroke-width="16"/>
+        </g>
+
+        <path d="M80 515h500" stroke="#9fb7c8" stroke-width="12" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+  <div class="background-shade" aria-hidden="true"></div>
+
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="logo">PE</div>
+        <div>
+          <h1>Portal de estaciones</h1>
+          <p class="subtitle">
+            Selecciona una etiqueta para filtrar los accesos. Cada tarjeta abre
+            la aplicación de la estación en una pestaña nueva.
+          </p>
+        </div>
+      </div>
+      <div class="status" id="loadStatus">Cargando datos…</div>
+    </header>
+
+    <section class="toolbar" aria-label="Filtros">
+      <div class="field">
+        <label for="tagFilter">Etiqueta identificativa</label>
+        <select id="tagFilter">
+          <option value="">Todas las etiquetas</option>
+        </select>
+      </div>
+      <button id="filterButton" class="btn-primary" type="button">Aplicar filtro</button>
+      <button id="showAllButton" class="btn-secondary" type="button">Mostrar todos</button>
+    </section>
+
+    <div class="summary" aria-live="polite">
+      <span id="resultText">Preparando estaciones…</span>
+      <span id="activeFilter"></span>
+    </div>
+
+    <section id="stationGrid" class="grid" aria-label="Listado de estaciones"></section>
+
+    <footer>
+      Portal empresarial · Datos cargados desde <code>estaciones.json</code>
+    </footer>
+  </main>
+
+  <!-- Datos de respaldo: permiten ver la página incluso si se abre el HTML sin servidor. -->
+  <script id="fallbackData" type="application/json">
+[
+  {
+    "nombre": "Estación Barcelona Norte",
+    "url": "https://www.example.com/barcelona-norte",
+    "comunidad": "Cataluña",
+    "ciudad": "Barcelona",
+    "etiqueta": "Soporte 24h"
+  },
+  {
+    "nombre": "Estación Vilafranca",
+    "url": "https://www.example.com/vilafranca",
+    "comunidad": "Cataluña",
+    "ciudad": "Vilafranca del Penedès",
+    "etiqueta": "Loxone"
+  },
+  {
+    "nombre": "Estación Madrid Centro",
+    "url": "https://www.example.com/madrid-centro",
+    "comunidad": "Comunidad de Madrid",
+    "ciudad": "Madrid",
+    "etiqueta": "Soporte 24h"
+  }
+]
+  </script>
+
+  <script>
+    "use strict";
+
+    const grid = document.getElementById("stationGrid");
+    const tagFilter = document.getElementById("tagFilter");
+    const filterButton = document.getElementById("filterButton");
+    const showAllButton = document.getElementById("showAllButton");
+    const resultText = document.getElementById("resultText");
+    const activeFilter = document.getElementById("activeFilter");
+    const loadStatus = document.getElementById("loadStatus");
+
+    let stations = [];
+
+    function safeText(value) {
+      return String(value ?? "").trim();
+    }
+
+    function isValidStation(item) {
+      if (!item || typeof item !== "object") return false;
+
+      const required = ["nombre", "url", "comunidad", "ciudad", "etiqueta"];
+      if (!required.every(key => safeText(item[key]))) return false;
+
+      try {
+        const parsed = new URL(item.url, window.location.href);
+        return ["http:", "https:"].includes(parsed.protocol);
+      } catch {
+        return false;
+      }
+    }
+
+    async function loadStations() {
+      try {
+        const response = await fetch("./estaciones.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const json = await response.json();
+        if (!Array.isArray(json)) throw new Error("El JSON debe ser una lista.");
+
+        stations = json.filter(isValidStation);
+        loadStatus.textContent = "JSON cargado";
+      } catch (error) {
+        console.warn("No se pudo cargar estaciones.json. Se usan datos de respaldo.", error);
+        const fallback = JSON.parse(document.getElementById("fallbackData").textContent);
+        stations = fallback.filter(isValidStation);
+        loadStatus.textContent = "Datos de demostración";
+      }
+
+      populateTags();
+      renderStations(stations);
+    }
+
+    function populateTags() {
+      const tags = [...new Set(stations.map(station => safeText(station.etiqueta)))]
+        .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+
+      tagFilter.innerHTML = '<option value="">Todas las etiquetas</option>';
+
+      for (const tag of tags) {
+        const option = document.createElement("option");
+        option.value = tag;
+        option.textContent = tag;
+        tagFilter.appendChild(option);
+      }
+    }
+
+    function createStationCard(station, index) {
+      const card = document.createElement("a");
+      card.className = "station-card";
+      card.href = station.url;
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+      card.style.animationDelay = `${Math.min(index * 45, 360)}ms`;
+      card.setAttribute(
+        "aria-label",
+        `Abrir ${station.nombre}, ${station.ciudad}, en una pestaña nueva`
+      );
+
+      const top = document.createElement("div");
+      const tag = document.createElement("span");
+      const title = document.createElement("h2");
+      const location = document.createElement("div");
+      const bottom = document.createElement("div");
+      const arrow = document.createElement("span");
+
+      tag.className = "tag";
+      tag.textContent = safeText(station.etiqueta);
+
+      title.textContent = safeText(station.nombre);
+
+      location.className = "location";
+      location.textContent = `⌖ ${safeText(station.ciudad)} · ${safeText(station.comunidad)}`;
+
+      bottom.className = "open-label";
+      bottom.append("Abrir estación");
+
+      arrow.className = "arrow";
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "↗";
+      bottom.appendChild(arrow);
+
+      top.append(tag, title, location);
+      card.append(top, bottom);
+
+      return card;
+    }
+
+    function renderStations(list, selectedTag = "") {
+      grid.replaceChildren();
+
+      if (!list.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No hay estaciones que coincidan con este filtro.";
+        grid.appendChild(empty);
+      } else {
+        list.forEach((station, index) => {
+          grid.appendChild(createStationCard(station, index));
+        });
+      }
+
+      resultText.innerHTML =
+        `<strong>${list.length}</strong> ${list.length === 1 ? "estación mostrada" : "estaciones mostradas"}`;
+
+      activeFilter.textContent = selectedTag ? `Filtro: ${selectedTag}` : "Sin filtro";
+    }
+
+    function applyFilter() {
+      const selectedTag = tagFilter.value;
+
+      if (!selectedTag) {
+        renderStations(stations);
+        return;
+      }
+
+      const filtered = stations.filter(
+        station => safeText(station.etiqueta) === selectedTag
+      );
+      renderStations(filtered, selectedTag);
+    }
+
+    filterButton.addEventListener("click", applyFilter);
+
+    tagFilter.addEventListener("change", applyFilter);
+
+    showAllButton.addEventListener("click", () => {
+      tagFilter.value = "";
+      renderStations(stations);
+    });
+
+    loadStations();
+  </script>
+</body>
+</html>

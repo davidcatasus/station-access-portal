@@ -1,0 +1,37 @@
+[
+  {
+    "nombre": "Estación Barcelona Norte",
+    "url": "https://www.example.com/barcelona-norte",
+    "comunidad": "Cataluña",
+    "ciudad": "Barcelona",
+    "etiqueta": "Soporte 24h"
+  },
+  {
+    "nombre": "Estación Vilafranca",
+    "url": "https://www.example.com/vilafranca",
+    "comunidad": "Cataluña",
+    "ciudad": "Vilafranca del Penedès",
+    "etiqueta": "Loxone"
+  },
+  {
+    "nombre": "Estación Madrid Centro",
+    "url": "https://www.example.com/madrid-centro",
+    "comunidad": "Comunidad de Madrid",
+    "ciudad": "Madrid",
+    "etiqueta": "Soporte 24h"
+  },
+  {
+    "nombre": "Estación Valencia",
+    "url": "https://www.example.com/valencia",
+    "comunidad": "Comunidad Valenciana",
+    "ciudad": "Valencia",
+    "etiqueta": "Mantenimiento"
+  },
+  {
+    "nombre": "Estación Sevilla",
+    "url": "https://www.example.com/sevilla",
+    "comunidad": "Andalucía",
+    "ciudad": "Sevilla",
+    "etiqueta": "Administración"
+  }
+]
